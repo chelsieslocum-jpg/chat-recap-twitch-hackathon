@@ -38,6 +38,7 @@
           <p id="savedHint" class="savedHint" hidden>App details are saved. Choose Connect with Twitch; use the fields only if you need to update them.</p>
           <div class="device"><button id="connectButton" class="button secondary" type="button">Connect with Twitch ↗</button><div id="deviceCode" class="code" hidden></div></div>
           <p id="twitchStatus" class="inlineStatus">Waiting for setup.</p>
+          <button id="tryWithoutTwitch" class="button secondary" type="button">Try a Recap Without Login →</button>
         </div>
       </section>
 
@@ -73,7 +74,7 @@
         </div>
         <div class="panel pastePanel">
           <h2>Try It with Sample Chat</h2>
-          <p class="muted">Use invented chat while you set up Twitch. Enter one <code>viewer: message</code> per line.</p>
+          <p class="muted">Create a local recap without signing in. The sample chat is invented. Enter one <code>viewer: message</code> per line.</p>
           <textarea id="chat" rows="5" spellcheck="false" aria-label="Chat messages" placeholder="demo_maple: which keyboard is that?&#10;demo_fern: what is the keyboard model?&#10;demo_comet: thanks for the puzzle stream"></textarea>
           <div class="actions"><button id="loadDemo" class="button secondary" type="button">Use Invented Sample</button><button id="pasteButton" class="button primary" type="button">Create Session from Paste</button></div>
         </div>

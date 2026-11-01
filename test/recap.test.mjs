@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseChat, verifyGroups, makeCards } from '../src/recap.mjs';
+import { parseChat, verifyGroups, makeCards, groupLocally } from '../src/recap.mjs';
 
 const messages = parseChat('demo_maple: Which keyboard is that?\ndemo_fern: Is it a mechanical keyboard?\ndemo_maple: I like the sound.');
 test('paste parser accepts viewer: message lines', () => {
@@ -18,4 +18,12 @@ test('cards count distinct viewers and retain exact sources', () => {
   assert.equal(card.viewers, 2);
   assert.equal(card.sources.length, 3);
   assert.equal(card.quoteUser, 'demo_maple');
+});
+test('local grouping makes source-linked topics without a model', () => {
+  const chat = parseChat('demo_a: Which keyboard is that?\ndemo_b: What keyboard model do you use?\ndemo_c: Can we do another puzzle?\ndemo_d: More puzzles next time please');
+  const cards = makeCards(groupLocally(chat), chat);
+  assert.equal(cards.length, 2);
+  assert.equal(cards.find(card => card.topic.startsWith('Keyboard')).viewers, 2);
+  assert.equal(cards.find(card => card.topic.startsWith('Puzzle')).viewers, 2);
+  for (const card of cards) assert.ok(card.sources.some(source => source.text.includes(card.quote)));
 });

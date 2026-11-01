@@ -38,11 +38,11 @@ function drawCards(cards) {
 }
 function drawSession(item) {
   current = item; selected = item.id;
-  $('recapBadge').textContent = item.status.toUpperCase();
+  $('recapBadge').textContent = item.status === 'ready-local' ? 'LOCAL RECAP' : item.status === 'ready-codex' ? 'CODEX RECAP' : item.status.toUpperCase();
   $('buildButton').hidden = !item.messages.length || item.status === 'building';
   $('buildButton').textContent = item.status === 'failed' ? 'Retry recap' : item.cards.length ? 'Rebuild recap' : 'Build recap';
   $('cards').replaceChildren();
-  if (item.cards.length) { drawCards(item.cards); notice(`${countLabel(item.messages.length, 'captured message')} · ${countLabel(item.cards.length, 'source-linked topic')}`); }
+  if (item.cards.length) { drawCards(item.cards); notice(`${countLabel(item.messages.length, 'captured message')} · ${countLabel(item.cards.length, 'source-linked topic')}${item.status === 'ready-local' ? ' · grouped on this computer' : ''}`); }
   else if (item.status === 'failed') notice(item.error || 'The recap failed. Try again.', true);
   else notice(`${countLabel(item.messages.length, 'message')} in this session. Ready to build.`);
   const done = item.cards.length > 0;
@@ -97,7 +97,8 @@ async function refresh() {
 }
 $('configForm').onsubmit = async event => { event.preventDefault(); try { await api('/api/twitch/config', { clientId: $('clientId').value.trim(), channel: $('channel').value.trim() }); await refresh(); } catch (error) { $('twitchStatus').textContent = error.message; } };
 $('connectButton').onclick = async () => { try { const data = await api('/api/twitch/connect', {}); $('deviceCode').hidden = false; $('deviceCode').replaceChildren(node('a', `Enter ${data.userCode} at Twitch ↗`)); const link = $('deviceCode').firstChild; link.href = data.verificationUri; link.target = '_blank'; link.rel = 'noreferrer'; await refresh(); } catch (error) { $('twitchStatus').textContent = error.message; } };
+$('tryWithoutTwitch').onclick = () => showView('recaps', true);
 $('loadDemo').onclick = () => { $('chat').value = sample; };
 $('pasteButton').onclick = async () => { try { const item = await api('/api/paste', { chat: $('chat').value }); drawSession(item); await refresh(); } catch (error) { notice(error.message, true); } };
-$('buildButton').onclick = async () => { if (!selected) return; $('buildButton').disabled = true; notice('Codex is grouping chat…'); try { const item = await api(`/api/sessions/${selected}/recap`, {}); drawSession(item); } catch (error) { notice(error.message, true); drawSession(await api(`/api/sessions/${selected}`)); } finally { $('buildButton').disabled = false; await refresh(); } };
+$('buildButton').onclick = async () => { if (!selected) return; $('buildButton').disabled = true; notice('Grouping chat…'); try { const item = await api(`/api/sessions/${selected}/recap`, {}); drawSession(item); } catch (error) { notice(error.message, true); drawSession(await api(`/api/sessions/${selected}`)); } finally { $('buildButton').disabled = false; await refresh(); } };
 refresh(); setInterval(refresh, 3000);

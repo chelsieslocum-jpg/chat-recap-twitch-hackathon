@@ -3,7 +3,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-import { parseChat, groupWithCodex, makeCards } from './src/recap.mjs';
+import { parseChat, groupWithCodex, groupLocally, makeCards } from './src/recap.mjs';
 import { TwitchConnection } from './src/twitch.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -60,10 +60,21 @@ async function buildRecap(id) {
     item.status = 'building'; item.error = null; save(item);
     try {
       const sample = item.messages.slice(-300);
-      const groups = await groupWithCodex(sample, { bin: process.env.CODEX_BIN || 'codex', timeoutMs: Number(process.env.CODEX_TIMEOUT_SECONDS || 120) * 1000 });
+      let groups;
+      let method = 'local';
+      if (process.env.CHAT_RECAP_ENGINE === 'codex') {
+        try {
+          groups = await groupWithCodex(sample, { bin: process.env.CODEX_BIN || 'codex', timeoutMs: Number(process.env.CODEX_TIMEOUT_SECONDS || 120) * 1000 });
+          method = 'codex';
+        } catch {
+          groups = groupLocally(sample);
+        }
+      } else {
+        groups = groupLocally(sample);
+      }
       phase = 'verifying';
       item.cards = makeCards(groups, sample);
-      item.status = 'ready'; item.error = null; save(item);
+      item.status = method === 'codex' ? 'ready-codex' : 'ready-local'; item.error = null; save(item);
       phase = 'ready';
       return item;
     } catch (error) {

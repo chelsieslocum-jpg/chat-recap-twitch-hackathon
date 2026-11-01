@@ -34,6 +34,42 @@ export function makeCards(groups, messages) {
   });
 }
 
+const commonWords = new Set('about after again also are can chat could did does doing for from have how into just like make more next our out please show some stream tell than that the their them there these this those using want what when where which while will with would your you'.split(' '));
+
+function keywords(text) {
+  const words = text.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [];
+  return [...new Set(words.map(word => word.endsWith('ies') && word.length > 4 ? `${word.slice(0, -3)}y` : word.endsWith('s') && !word.endsWith('ss') && word.length > 4 ? word.slice(0, -1) : word).filter(word => !commonWords.has(word)))];
+}
+
+export function groupLocally(messages) {
+  if (!messages.length) throw new Error('No chat messages to recap.');
+  const tokens = messages.map(message => keywords(message.text));
+  const frequency = new Map();
+  for (const words of tokens) for (const word of words) frequency.set(word, (frequency.get(word) || 0) + 1);
+  const clusters = new Map();
+  tokens.forEach((words, index) => {
+    const repeated = words.filter(word => frequency.get(word) > 1).sort((a, b) => frequency.get(b) - frequency.get(a) || b.length - a.length || a.localeCompare(b));
+    if (!repeated.length) return;
+    const key = repeated[0];
+    if (!clusters.has(key)) clusters.set(key, []);
+    clusters.get(key).push(index);
+  });
+  const ranked = [...clusters].filter(([, ids]) => ids.length > 1).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+  const selected = ranked.slice(0, 7);
+  const used = new Set(selected.flatMap(([, ids]) => ids));
+  const groups = selected.map(([key, ids]) => {
+    const sources = ids.slice(-80);
+    const label = key[0].toUpperCase() + key.slice(1);
+    return { topic: `${label} ${sources.some(id => messages[id].text.includes('?')) ? 'questions' : 'conversation'}`, quote: messages[sources[0]].text.slice(0, 160), ids: sources };
+  });
+  const remaining = messages.map((_, index) => index).filter(index => !used.has(index));
+  if (remaining.length) {
+    const ids = remaining.slice(-80);
+    groups.push({ topic: groups.length ? 'Other chat moments' : 'Chat highlights', quote: messages[ids[0]].text.slice(0, 160), ids });
+  }
+  return verifyGroups(groups, messages);
+}
+
 const schema = {
   type: 'object', additionalProperties: false, required: ['groups'],
   properties: { groups: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'object', additionalProperties: false, required: ['topic', 'quote', 'ids'], properties: { topic: { type: 'string' }, quote: { type: 'string' }, ids: { type: 'array', items: { type: 'integer' } } } } } }

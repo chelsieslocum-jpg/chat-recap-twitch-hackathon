@@ -10,7 +10,7 @@ import { join } from 'node:path';
 test('local server serves state, overlay, and pasted sessions', async () => {
   const port = 18000 + Math.floor(Math.random() * 20000);
   const dataDir = await mkdtemp(join(tmpdir(), 'chat-recap-test-'));
-  const child = spawn(process.execPath, ['server.mjs'], { cwd: fileURLToPath(new URL('..', import.meta.url)), env: { ...process.env, PORT: String(port), CHAT_RECAP_DATA_DIR: dataDir }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['server.mjs'], { cwd: fileURLToPath(new URL('..', import.meta.url)), env: { ...process.env, PORT: String(port), CHAT_RECAP_DATA_DIR: dataDir, CHAT_RECAP_ENGINE: 'local', CODEX_BIN: 'no-such-codex-binary' }, stdio: ['ignore', 'pipe', 'pipe'] });
   try {
     await Promise.race([once(child.stdout, 'data'), once(child, 'exit').then(() => { throw new Error('Server exited before start.'); })]);
     const base = `http://127.0.0.1:${port}`;
@@ -24,5 +24,10 @@ test('local server serves state, overlay, and pasted sessions', async () => {
     assert.equal(item.messages[0].user, 'demo_a');
     const loaded = await (await fetch(`${base}/api/sessions/${item.id}`)).json();
     assert.equal(loaded.messages.length, 1);
+    const recapResponse = await fetch(`${base}/api/sessions/${item.id}/recap`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    assert.equal(recapResponse.status, 200);
+    const recap = await recapResponse.json();
+    assert.equal(recap.status, 'ready-local');
+    assert.equal(recap.cards[0].quote, 'hello chat');
   } finally { child.kill(); await rm(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); }
 });
