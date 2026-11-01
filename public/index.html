@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chat Recap</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="appShell">
+    <aside class="sidebar">
+      <div class="brand"><span class="mark" aria-hidden="true">✳</span><span>CHAT RECAP</span></div>
+      <nav class="mainNav" aria-label="Main navigation">
+        <button class="navButton" type="button" data-view="connect" aria-controls="screen-connect" aria-pressed="true">Connect</button>
+        <button class="navButton" type="button" data-view="live" aria-controls="screen-live" aria-pressed="false">Live</button>
+        <button class="navButton" type="button" data-view="recaps" aria-controls="screen-recaps" aria-pressed="false">Recaps</button>
+        <button class="navButton" type="button" data-view="archive" aria-controls="screen-archive" aria-pressed="false">Archive</button>
+      </nav>
+      <div class="sidebarStatus"><span class="statusDot" aria-hidden="true"></span><span id="connectionBadge">NOT CONNECTED</span></div>
+      <p class="sidebarNote">A local space for the moments your chat made.</p>
+    </aside>
+
+    <main class="workspace">
+      <section id="screen-connect" class="screen" aria-labelledby="connectHeading">
+        <header class="screenHero">
+          <span class="eyebrow">GET STARTED</span>
+          <h1 id="connectHeading" tabindex="-1">Your Chat: <em class="pixelTitle">What Mattered</em></h1>
+          <p>Capture the conversation while you stream. When the show ends, get a recap with real quotes and the viewers behind them.</p>
+        </header>
+        <div class="panel connectPanel">
+          <h2>Connect Your Channel</h2>
+          <p class="muted">Make a free app in the <a href="https://dev.twitch.tv/console/apps" target="_blank" rel="noreferrer">Twitch Developer Console ↗</a>. Copy its Client ID here. Your login stays on this computer.</p>
+          <form id="configForm">
+            <label>Client ID<input id="clientId" autocomplete="off" placeholder="From your Twitch app" required></label>
+            <label>Channel Name<input id="channel" autocomplete="off" placeholder="Your Twitch username" required></label>
+            <button class="button primary" type="submit">Save App Details</button>
+          </form>
+          <p id="savedHint" class="savedHint" hidden>App details are saved. Choose Connect with Twitch; use the fields only if you need to update them.</p>
+          <div class="device"><button id="connectButton" class="button secondary" type="button">Connect with Twitch ↗</button><div id="deviceCode" class="code" hidden></div></div>
+          <p id="twitchStatus" class="inlineStatus">Waiting for setup.</p>
+        </div>
+      </section>
+
+      <section id="screen-live" class="screen" aria-labelledby="liveHeading" hidden>
+        <header class="screenHero compact">
+          <span class="eyebrow">WHILE YOU STREAM</span>
+          <h1 id="liveHeading" tabindex="-1">Chat, in Focus.</h1>
+          <p>See whether capture is running without hunting through setup controls.</p>
+        </header>
+        <div class="panel livePanel">
+          <h2>Live Chat</h2>
+          <span id="liveBadge" class="badge">OFF AIR</span>
+          <div class="stat"><strong id="messageCount">0</strong><span id="messageCountLabel">messages captured this stream</span></div>
+          <button id="latestRecapButton" class="button secondary" type="button" hidden>View Latest Recap →</button>
+          <p class="muted">Chat capture starts when your stream goes live. Going offline builds the recap. A streamer or moderator can type <code>!recap</code> for a quick update in chat.</p>
+          <a class="button secondary overlayLink" href="/overlay" target="_blank">Open OBS Overlay ↗</a>
+        </div>
+      </section>
+
+      <section id="screen-recaps" class="screen" aria-labelledby="recapsHeading" hidden>
+        <header class="screenHero compact">
+          <span class="eyebrow">AFTER THE STREAM</span>
+          <h1 id="recapsHeading" tabindex="-1">What Chat Said.</h1>
+          <p>Find recurring questions and ideas with quotes you can check against the original messages.</p>
+        </header>
+        <div class="panel recapPanel">
+          <h2>Your Recap</h2>
+          <span id="recapBadge" class="badge">NO SESSION</span>
+          <div id="pipeline" class="pipeline"><span>CAPTURE</span><span>GROUP</span><span>VERIFY</span><span>SAVE</span></div>
+          <div id="notice" class="notice">Pick a saved session or paste some chat to begin.</div>
+          <button id="buildButton" class="button primary" hidden>Build Recap</button>
+          <div id="cards" class="cards"></div>
+        </div>
+        <div class="panel pastePanel">
+          <h2>Try It with Sample Chat</h2>
+          <p class="muted">Use invented chat while you set up Twitch. Enter one <code>viewer: message</code> per line.</p>
+          <textarea id="chat" rows="5" spellcheck="false" aria-label="Chat messages" placeholder="demo_maple: which keyboard is that?&#10;demo_fern: what is the keyboard model?&#10;demo_comet: thanks for the puzzle stream"></textarea>
+          <div class="actions"><button id="loadDemo" class="button secondary" type="button">Use Invented Sample</button><button id="pasteButton" class="button primary" type="button">Create Session from Paste</button></div>
+        </div>
+      </section>
+
+      <section id="screen-archive" class="screen" aria-labelledby="archiveHeading" hidden>
+        <header class="screenHero compact">
+          <span class="eyebrow">COME BACK TO IT</span>
+          <h1 id="archiveHeading" tabindex="-1">Saved Sessions.</h1>
+          <p>Each stream gets its own recap, kept on this computer.</p>
+        </header>
+        <div class="panel archivePanel">
+          <h2>Your Archive</h2>
+          <div id="sessions" class="sessions"></div>
+        </div>
+      </section>
+
+      <footer>Built with Codex · Source quotes are checked against captured messages · Review cards before sharing.</footer>
+    </main>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

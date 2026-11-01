@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chat Recap Overlay</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Grotesk:wght@700&family=VT323&display=swap');
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #fbf8ff; font-family: 'DM Sans', sans-serif; }
+    .box { width: 500px; max-width: calc(100vw - 30px); padding: 22px; border: 1px solid #51416b; border-radius: 16px; background: #1a1430f2; box-shadow: 0 20px 60px #0008; }
+    .top { color: #8beeff; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+    .top .mark { color: #c7adff; font-size: 18px; }
+    .top #channel { color: #d0c5e2; }
+    h1 { margin: 10px 0 0; font: 700 25px 'Space Grotesk', sans-serif; letter-spacing: -.04em; }
+    h1 em { display: block; color: #ff83d5; font: 400 42px/.92 'VT323', ui-monospace, monospace; font-style: normal; letter-spacing: .01em; }
+    .count { margin: 11px 0 18px; color: #d0c5e2; font-size: 12px; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    li { padding: 11px 0; border-top: 1px solid #51416b; color: #fbf8ff; font-size: 18px; }
+    small { display: block; margin-top: 4px; color: #8beeff; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="top"><span class="mark" aria-hidden="true">✳</span> CHAT RECAP <span id="channel"></span></div>
+    <h1>Your Chat: <em id="title">What Mattered</em></h1>
+    <div class="count" id="count"></div>
+    <ul id="topics"></ul>
+  </div>
+  <script>
+    async function refresh() {
+      try {
+        const response = await fetch('/api/overlay');
+        const data = await response.json();
+        document.getElementById('channel').textContent = data.channel ? `· #${data.channel}` : '';
+        document.getElementById('count').textContent = data.live ? `${data.messageCount} messages captured live` : 'Latest saved recap';
+        document.getElementById('title').textContent = data.cards.length ? 'What Mattered' : data.live ? 'Warming Up' : 'Waiting for a Recap';
+        const list = document.getElementById('topics');
+        list.replaceChildren();
+        for (const card of data.cards.slice(0, 3)) {
+          const item = document.createElement('li');
+          item.textContent = card.topic;
+          const count = document.createElement('small');
+          count.textContent = `${card.viewers} distinct viewers`;
+          item.append(count);
+          list.append(item);
+        }
+      } catch { /* The overlay keeps its last visible state during a brief disconnect. */ }
+    }
+    refresh();
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>
