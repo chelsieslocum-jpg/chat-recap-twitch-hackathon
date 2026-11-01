@@ -30,7 +30,7 @@ The login requests `user:read:chat` and `user:write:chat`. EventSub uses a WebSo
 
 Open **Recaps**, choose **Use Invented Sample**, then **Create Session from Paste** and **Build Recap**. You can also paste your own `viewer: message` lines. Only invented `demo_*` chat is supplied by the app. The default grouping runs locally, so this path works immediately without Twitch or Codex sign-in.
 
-The local grouper finds repeated keywords, places remaining messages in a highlights card, and uses only actual message text for quotes. Its cards say **LOCAL RECAP**. To use the optional Codex grouper, set `CHAT_RECAP_ENGINE=codex` before `npm start` and sign in with `codex login`. Those cards say **CODEX RECAP**. If Codex is unavailable, the app falls back to local grouping and labels the result accordingly.
+The local grouper finds repeated keywords, surfaces one-off questions, places other messages in a highlights card, and uses only actual message text for quotes. Its cards say **LOCAL RECAP**. To use the optional Codex grouper, set `CHAT_RECAP_ENGINE=codex` before `npm start` and sign in with `codex login`. Those cards say **CODEX RECAP**. If Codex is unavailable, the app falls back to local grouping and labels the result accordingly.
 
 The source gate rejects any topic whose quoted text does not appear in one of its selected source messages. Viewer counts and source cards come from the original messages. This proves quote membership, not that the topic labels are semantically correct. Review cards before sharing.
 

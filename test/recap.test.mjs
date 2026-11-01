@@ -27,3 +27,11 @@ test('local grouping makes source-linked topics without a model', () => {
   assert.equal(cards.find(card => card.topic.startsWith('Puzzle')).viewers, 2);
   for (const card of cards) assert.ok(card.sources.some(source => source.text.includes(card.quote)));
 });
+test('local recap surfaces one-off questions without inventing topics', () => {
+  const chat = parseChat('demo_a: Can you make a tutorial?\ndemo_b: What are your next builds?\ndemo_c: Thanks for the stream');
+  const cards = makeCards(groupLocally(chat), chat);
+  assert.equal(cards.length, 3);
+  assert.ok(cards.some(card => card.topic === 'Can you make a tutorial'));
+  assert.ok(cards.some(card => card.topic === 'What are your next builds'));
+  assert.ok(cards.some(card => card.topic === 'Other chat moments'));
+});

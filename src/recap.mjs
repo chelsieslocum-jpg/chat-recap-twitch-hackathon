@@ -63,8 +63,16 @@ export function groupLocally(messages) {
     return { topic: `${label} ${sources.some(id => messages[id].text.includes('?')) ? 'questions' : 'conversation'}`, quote: messages[sources[0]].text.slice(0, 160), ids: sources };
   });
   const remaining = messages.map((_, index) => index).filter(index => !used.has(index));
-  if (remaining.length) {
-    const ids = remaining.slice(-80);
+  const questionSlots = Math.max(0, 7 - groups.length);
+  const singleQuestions = questionSlots ? remaining.filter(index => messages[index].text.includes('?')).slice(-questionSlots) : [];
+  for (const index of singleQuestions) {
+    const text = messages[index].text.trim();
+    groups.push({ topic: text.replace(/[?.!\s]+$/, '').slice(0, 80) || 'Viewer question', quote: text.slice(0, 160), ids: [index] });
+    used.add(index);
+  }
+  const other = remaining.filter(index => !used.has(index));
+  if (other.length) {
+    const ids = other.slice(-80);
     groups.push({ topic: groups.length ? 'Other chat moments' : 'Chat highlights', quote: messages[ids[0]].text.slice(0, 160), ids });
   }
   return verifyGroups(groups, messages);
